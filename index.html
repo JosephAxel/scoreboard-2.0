@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basketball Scoreboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="scoreboard">
+        <div class="team-section-1">
+            <div class="team-div">
+                <div class="team-name" id="team1-name">HOME</div>
+                <div class="score digital-font" id="team1-score" tabindex="0">0</div>
+            </div>
+            <div class="fouls" id="team1-fouls">
+                <h1>FOULS</h1>
+                <div class="foul-count digital-font" id="team1-foul-count">0</div>
+            </div>
+        </div>
+        <div class="center-section">
+            <div class="timer digital-font" id="timer">10:00</div>
+            <div class="shot-clock digital-font" id="shot-clock">24</div>
+            <div class="controls">
+                <img src="assets/logo.png" alt="Company Logo" id="logo">
+            </div>
+        </div>
+        <div class="team-section-2">
+            <div class="team-div">
+                <div class="team-name" id="team2-name">AWAY</div>
+                <div class="score digital-font" id="team2-score" tabindex="0">0</div>
+            </div>
+            <div class="fouls" id="team2-fouls">
+                <h1>FOULS</h1>
+                <div class="foul-count digital-font" id="team2-foul-count">0</div>
+            </div>
+        </div>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>

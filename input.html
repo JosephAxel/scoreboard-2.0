@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timer Controls</title>
+    <style>
+        body {
+            background-color: black;
+            font-family: 'Chakra Petch', sans-serif;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 40px; /* jarak dari bawah layar */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .main-label {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+
+        .timer-controls {
+            border: 3px solid white;
+            border-radius: 30px;
+            padding: 40px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .timer-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        .timer-section:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background-color: white;
+        }
+
+        .label {
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .timer-button {
+            font-size: 32px;
+            padding: 15px 40px;
+            border: 3px solid white;
+            border-radius: 20px;
+            background: none;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .timer-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="footer">
+        <div class="label main-label">TIME CONTROL</div>
+        <div class="timer-controls">
+            <div class="timer-section">
+                <div class="label">BOTH</div>
+                <button id="bothBtn" class="timer-button">Start</button>
+            </div>
+            <div class="timer-section">
+                <div class="label">GAME</div>
+                <button id="gameBtn" class="timer-button">Start</button>
+            </div>
+            <div class="timer-section">
+                <div class="label">SHOT</div>
+                <button id="shotBtn" class="timer-button">Start</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+
+</html>

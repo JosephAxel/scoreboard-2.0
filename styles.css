@@ -1,0 +1,131 @@
+body {
+    font-family: 'Chakra Petch', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: black;
+    color: white;
+}
+
+.scoreboard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 2080px; /* Increased by 30% from 1600px */
+    text-align: center;
+    padding-left: 15%;
+    padding-right: 15%;
+    height: 83%;
+}
+
+.team-section-1 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.team-section-2 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.team-name {
+    font-size: 4.68em; 
+    margin-bottom: 31.2px; 
+    max-width: 319.38px; 
+    cursor: pointer;
+}
+
+/* .team-name {
+    font-size: clamp(1em, 4vw, 4.68em); 
+    margin-bottom: 31.2px; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+    max-width: 319.38px; 
+} */
+
+.score {
+    font-size: 10.92em; /* Increased by 30% from 8.4em */
+    color: white;
+    margin-bottom: 31.2px; /* Increased by 30% from 24px */
+    /* cursor: pointer; */
+    outline: none;
+    border: 5.46px solid white; /* Increased by 30% from 4.2px */
+    border-radius: 27.3px; /* Increased by 30% from 21px */
+    padding: 18.2px; /* Increased by 30% from 14px */
+    width: 273px; /* Increased by 30% from 210px */
+    text-align: center;
+}
+
+.center-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.timer {
+    font-size: 9.36em; /* Increased by 30% from 7.2em */
+    margin-bottom: 31.2px; /* Increased by 30% from 24px */
+    cursor: pointer;
+}
+
+.timer:active, .team-name:active {
+    background-color: #424446; /* Warna latar belakang berubah saat diklik */
+}
+
+.shot-clock {
+    font-size: 6.76em; /* Increased by 30% from 5.2em */
+    color: white;
+    margin-bottom: 31.2px; /* Increased by 30% from 24px */
+}
+
+.shot-clock.red {
+    color: red; /* Color when shot-clock count is less than 5 */
+}
+
+.fouls {
+    display: flex;
+    align-items: center;
+    margin-top: 31.2px; /* Increased by 30% from 24px */
+    flex-direction: column;
+}
+
+.foul-count {
+    font-size: 7.8em; /* Increased by 30% from 6em */
+    color: white;
+    border: 5.46px solid white; /* Increased by 30% from 4.2px */
+    border-radius: 27.3px; /* Increased by 30% from 21px */
+    padding: 18.2px; /* Increased by 30% from 14px */
+    width: 182px; /* Increased by 30% from 140px */
+    text-align: center;
+}
+
+.foul-count.red {
+    color: red; /* Color when foul count is more than 5 */
+}
+
+.controls {
+    margin-top: 31.2px; /* Increased by 30% from 24px */
+    display: flex;
+    justify-content: center;
+}
+
+#logo {
+    max-width: 100%; /* Ensure the logo doesn't exceed its container's width */
+    height: auto; /* Maintain aspect ratio */
+    width: 200px; /* Set a max-width if needed to control its size */
+}
+
+button {
+    padding: 15.6px 31.2px; /* Increased by 30% from 12px 24px */
+    font-size: 2.34em; /* Increased by 30% from 1.8em */
+}
