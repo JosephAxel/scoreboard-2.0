@@ -1,4 +1,7 @@
 const channel = new BroadcastChannel('scoreboard');
+  let currentInitialShot = 24; // 🔁 Global var untuk kontrol logika tombol 14
+  let isGameRunning = false;
+  let isShotRunning = false;
 
 // ===============================
 // Untuk index.html (display)
@@ -153,9 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const set14ShotBtn = document.getElementById('set14Shot');
   const set24ShotBtn = document.getElementById('set24Shot');
 
-  let currentInitialShot = 24; // 🔁 Global var untuk kontrol logika tombol 14
-  let isGameRunning = false;
-  let isShotRunning = false;
 
   // Ambil status dari localStorage saat halaman dimuat
   if (localStorage.getItem('isGameRunning') !== null) {
@@ -212,8 +212,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     shotBtn.addEventListener('click', () => {
+      console.log('isGameRunning: ', isGameRunning);
+      console.log('isShotRunning: ', isShotRunning);
       isShotRunning = !isShotRunning;
       localStorage.setItem('isShotRunning', isShotRunning);
+
+      if (isShotRunning && !isGameRunning) {
+        gameBtn.click();
+      }
 
       if (!isShotRunning && isGameRunning) {
         bothBtn.textContent = 'Start';
@@ -232,10 +238,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateSetShotButtonsState() {
     
     if (!set12ShotBtn || !set24ShotBtn || !set14ShotBtn) return;
-    console.log('12:', set12ShotBtn, '14:', set14ShotBtn, '24:', set24ShotBtn);
     // Tombol 12 & 24: hanya aktif kalau timer tidak jalan
-    set12ShotBtn.disabled = isShotRunning;
-    set24ShotBtn.disabled = isShotRunning;
+    // set12ShotBtn.disabled = isShotRunning;
+    // set24ShotBtn.disabled = isShotRunning;
 
     // Tombol 14: hanya aktif jika shot clock tidak 12
     set14ShotBtn.disabled = currentInitialShot === 12;
@@ -247,10 +252,16 @@ document.addEventListener('DOMContentLoaded', () => {
     set12ShotBtn.addEventListener('click', () => {
       currentInitialShot = 12;
       updateSetShotButtonsState();
-      channel.postMessage({ type: 'set-shot-time', value: 12 });
+      channel.postMessage({ type: 'set-shot-time', value: 12, running: isShotRunning });
+       // Jika sedang berjalan, reset timer langsung
+      if (isShotRunning) {
+        resetShotClock(14);
+      }
     });
 
     set14ShotBtn.addEventListener('click', () => {
+      currentInitialShot = 14;
+      updateSetShotButtonsState();
       // Tombol ini hanya bisa diklik jika currentInitialShot !== 12
       if (currentInitialShot === 12) return;
       channel.postMessage({ type: 'set-shot-time', value: 14, running: isShotRunning });
@@ -263,34 +274,31 @@ document.addEventListener('DOMContentLoaded', () => {
     set24ShotBtn.addEventListener('click', () => {
       currentInitialShot = 24;
       updateSetShotButtonsState();
-      channel.postMessage({ type: 'set-shot-time', value: 24 });
+      channel.postMessage({ type: 'set-shot-time', value: 24, running: isShotRunning });
+       // Jika sedang berjalan, reset timer langsung
+      if (isShotRunning) {
+        resetShotClock(14);
+      }
     });
   }
-});
 
+  if (window.location.pathname.endsWith('input.html')) {
+    // ===============================
+    // Untuk shortcut keyboard (controller)
+    // ===============================
+    document.addEventListener('keydown', (event) => {
+      const key = event.key;
 
-
-
-
-
-
-
-
-
-
-// ===============================
-// Untuk shortcut keyboard (controller)
-// ===============================
-
-document.addEventListener('keydown', (event) => {
-  const key = event.key;
-
-  if (key === ' ') {
-    event.preventDefault(); // mencegah scroll saat tekan spasi
-    bothBtn.click();
-  } else if (key === '[' || key === '{') {
-    gameBtn.click();
-  } else if (key === ']' || key === '}') {
-    shotBtn.click();
+      if (key === ' ') {
+        // resetShotClock(currentInitialShot);
+        event.preventDefault(); // mencegah scroll saat tekan spasi
+      } else if (key === '[' || key === '{') {
+        gameBtn.click();
+      } else if (key === ']' || key === '}') {
+        shotBtn.click();
+      } else if (key === 'p' || key === 'P'){
+        bothBtn.click();
+      }
+    });
   }
 });
