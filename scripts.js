@@ -22,35 +22,38 @@ function listenForUpdates() {
       document.getElementById('team2-name').textContent = data.team2Name;
     }
 
-    if (data.type === 'toggle-both-timer') {
+    if (data.type === 'toggle-game-timer') {
       if (data.running) {
-        console.log('both start')
-        startTimers();
-    } else {
-        console.log('both stop')
-        stopTimers();
-    }
-}
-
-if (data.type === 'toggle-game-timer') {
-    if (data.running) {
         console.log('game start')
         startGameTimer();
-    } else {
+      } else {
         console.log('game stop')
         clearInterval(gameTimerInterval);
+      }
     }
-}
 
-if (data.type === 'toggle-shot-timer') {
-    if (data.running) {
+    if (data.type === 'toggle-shot-timer') {
+      if (data.running) {
         console.log('shot start')
         startShotClock();
-    } else {
+      } else {
         console.log('shot stop')
         clearInterval(shotClockInterval);
       }
     }
+
+    if (data.type === 'set-shot-time') {
+      const shotClockEl = document.getElementById('shot-clock');
+      if (shotClockEl) {
+        if (data.running) {
+          resetShotClock(data.value);
+        } else {
+          shotClockEl.textContent = data.value;
+        }
+      }
+    }
+
+
   };
 }
 
@@ -59,21 +62,11 @@ if (document.getElementById('team1-score')) {
 }
 
 // ===============================
-// Untuk timer & shot clock
+// Logic timer & shot clock
 // ===============================
 let gameTimerInterval = null;
 let shotClockInterval = null;
 const shotClockBeep = new Audio('assets/buzzer.mp3');
-
-function startTimers() {
-  startGameTimer();
-  startShotClock();
-}
-
-function stopTimers() {
-  clearInterval(gameTimerInterval);
-  clearInterval(shotClockInterval);
-}
 
 function startGameTimer() {
   const timerEl = document.getElementById('timer');
@@ -125,82 +118,169 @@ function startShotClock() {
   }, 1000);
 }
 
+function resetShotClock(value) {
+  const shotClockEl = document.getElementById('shot-clock');
+  if (!shotClockEl) return;
 
-// ===============================
-// Untuk input.html (controller)
-// ===============================
-const bothBtn = document.getElementById('bothBtn');
-const gameBtn = document.getElementById('gameBtn');
-const shotBtn = document.getElementById('shotBtn');
+  clearInterval(shotClockInterval); // stop yang sedang jalan
 
-let isGameRunning = false;
-let isShotRunning = false;
+  let shotSeconds = value;
+  shotClockEl.textContent = shotSeconds;
 
-// Ambil status dari localStorage saat halaman dimuat
-if (localStorage.getItem('isGameRunning') !== null) {
-  isGameRunning = localStorage.getItem('isGameRunning') === 'true';
+  shotClockInterval = setInterval(() => {
+    if (shotSeconds === 0) {
+      clearInterval(shotClockInterval);
+      shotClockBeep.currentTime = 0;
+      shotClockBeep.play().catch(e => console.warn("Audio play blocked:", e));
+      return;
+    }
+
+    shotSeconds--;
+    shotClockEl.textContent = shotSeconds;
+  }, 1000);
 }
-if (localStorage.getItem('isShotRunning') !== null) {
-  isShotRunning = localStorage.getItem('isShotRunning') === 'true';
-}
 
-function updateButtonStates() {
-  if (!gameBtn || !shotBtn || !bothBtn) return;
 
-  gameBtn.textContent = isGameRunning ? 'Stop' : 'Start';
-  shotBtn.textContent = isShotRunning ? 'Stop' : 'Start';
+document.addEventListener('DOMContentLoaded', () => {
+  // ===============================
+  // Untuk input.html (time controller)
+  // ===============================
+  const bothBtn = document.getElementById('bothBtn');
+  const gameBtn = document.getElementById('gameBtn');
+  const shotBtn = document.getElementById('shotBtn');
+  
+  const set12ShotBtn = document.getElementById('set12Shot');
+  const set14ShotBtn = document.getElementById('set14Shot');
+  const set24ShotBtn = document.getElementById('set24Shot');
 
-  if (isGameRunning && isShotRunning) {
-    bothBtn.textContent = 'Stop';
-  } else {
-    bothBtn.textContent = 'Start';
+  let currentInitialShot = 24; // 🔁 Global var untuk kontrol logika tombol 14
+  let isGameRunning = false;
+  let isShotRunning = false;
+
+  // Ambil status dari localStorage saat halaman dimuat
+  if (localStorage.getItem('isGameRunning') !== null) {
+    isGameRunning = localStorage.getItem('isGameRunning') === 'true';
   }
-}
+  if (localStorage.getItem('isShotRunning') !== null) {
+    isShotRunning = localStorage.getItem('isShotRunning') === 'true';
+  }
 
-updateButtonStates();
+  function updateButtonStates() {
+    if (!gameBtn || !shotBtn || !bothBtn) return;
 
-if (bothBtn && gameBtn && shotBtn) {
-  bothBtn.addEventListener('click', () => {
-    const willRun = !(isGameRunning && isShotRunning);
+    gameBtn.textContent = isGameRunning ? 'Stop' : 'Start';
+    shotBtn.textContent = isShotRunning ? 'Stop' : 'Start';
 
-    isGameRunning = willRun;
-    isShotRunning = willRun;
-
-    localStorage.setItem('isGameRunning', isGameRunning);
-    localStorage.setItem('isShotRunning', isShotRunning);
-
-    updateButtonStates();
-
-    channel.postMessage({ type: 'toggle-game-timer', running: isGameRunning });
-    channel.postMessage({ type: 'toggle-shot-timer', running: isShotRunning });
-  });
-
-  gameBtn.addEventListener('click', () => {
-    isGameRunning = !isGameRunning;
-    localStorage.setItem('isGameRunning', isGameRunning);
-
-    if (!isGameRunning && isShotRunning) {
+    if (isGameRunning && isShotRunning) {
+      bothBtn.textContent = 'Stop';
+    } else {
       bothBtn.textContent = 'Start';
     }
 
-    updateButtonStates();
+    updateSetShotButtonsState();
+  }
 
-    channel.postMessage({ type: 'toggle-game-timer', running: isGameRunning });
-  });
+  updateButtonStates();
 
-  shotBtn.addEventListener('click', () => {
-    isShotRunning = !isShotRunning;
-    localStorage.setItem('isShotRunning', isShotRunning);
+  if (bothBtn && gameBtn && shotBtn) {
+    bothBtn.addEventListener('click', () => {
+      const willRun = !(isGameRunning && isShotRunning);
 
-    if (!isShotRunning && isGameRunning) {
-      bothBtn.textContent = 'Start';
-    }
+      isGameRunning = willRun;
+      isShotRunning = willRun;
 
-    updateButtonStates();
+      localStorage.setItem('isGameRunning', isGameRunning);
+      localStorage.setItem('isShotRunning', isShotRunning);
 
-    channel.postMessage({ type: 'toggle-shot-timer', running: isShotRunning });
-  });
-}
+      updateButtonStates();
+
+      channel.postMessage({ type: 'toggle-game-timer', running: isGameRunning });
+      channel.postMessage({ type: 'toggle-shot-timer', running: isShotRunning });
+    });
+
+    gameBtn.addEventListener('click', () => {
+      isGameRunning = !isGameRunning;
+      localStorage.setItem('isGameRunning', isGameRunning);
+
+      if (!isGameRunning && isShotRunning) {
+        bothBtn.textContent = 'Start';
+      }
+
+      updateButtonStates();
+
+      channel.postMessage({ type: 'toggle-game-timer', running: isGameRunning });
+    });
+
+    shotBtn.addEventListener('click', () => {
+      isShotRunning = !isShotRunning;
+      localStorage.setItem('isShotRunning', isShotRunning);
+
+      if (!isShotRunning && isGameRunning) {
+        bothBtn.textContent = 'Start';
+      }
+
+      updateButtonStates();
+
+      channel.postMessage({ type: 'toggle-shot-timer', running: isShotRunning });
+    });
+  }
+
+  // ===============================
+  // Untuk input.html (set shot clock)
+  // ===============================
+
+  function updateSetShotButtonsState() {
+    
+    if (!set12ShotBtn || !set24ShotBtn || !set14ShotBtn) return;
+    console.log('12:', set12ShotBtn, '14:', set14ShotBtn, '24:', set24ShotBtn);
+    // Tombol 12 & 24: hanya aktif kalau timer tidak jalan
+    set12ShotBtn.disabled = isShotRunning;
+    set24ShotBtn.disabled = isShotRunning;
+
+    // Tombol 14: hanya aktif jika shot clock tidak 12
+    set14ShotBtn.disabled = currentInitialShot === 12;
+  }
+
+  if (set12ShotBtn && set14ShotBtn && set24ShotBtn) {
+    updateSetShotButtonsState();
+
+    set12ShotBtn.addEventListener('click', () => {
+      currentInitialShot = 12;
+      updateSetShotButtonsState();
+      channel.postMessage({ type: 'set-shot-time', value: 12 });
+    });
+
+    set14ShotBtn.addEventListener('click', () => {
+      // Tombol ini hanya bisa diklik jika currentInitialShot !== 12
+      if (currentInitialShot === 12) return;
+      channel.postMessage({ type: 'set-shot-time', value: 14, running: isShotRunning });
+       // Jika sedang berjalan, reset timer langsung
+      if (isShotRunning) {
+        resetShotClock(14);
+      }
+    });
+
+    set24ShotBtn.addEventListener('click', () => {
+      currentInitialShot = 24;
+      updateSetShotButtonsState();
+      channel.postMessage({ type: 'set-shot-time', value: 24 });
+    });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+// ===============================
+// Untuk shortcut keyboard (controller)
+// ===============================
 
 document.addEventListener('keydown', (event) => {
   const key = event.key;

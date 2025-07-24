@@ -10,16 +10,102 @@
             background-color: black;
             font-family: 'Chakra Petch', sans-serif;
             color: white;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
         }
 
-        .footer {
-            position: absolute;
-            bottom: 40px; /* jarak dari bawah layar */
+        /* .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 1200px;
+        } */
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 30px;
+            width: 100%;
+            max-width: 1400px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* .team-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 200px;
+            flex: 1;
+        } */
+
+        .team-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 200px;
+            flex-shrink: 0;
+        }
+
+        .team-controls input {
+            font-size: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            text-align: center;
+        }
+
+        .team-controls .label {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .score-buttons,
+        .foul-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .score-buttons button,
+        .foul-buttons button {
+            font-size: 18px;
+            padding: 10px 15px;
+            border: 2px solid white;
+            background: none;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .score-buttons button:hover,
+        .foul-buttons button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* .middle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            width: 100%;
+            max-width: 1000px;
+        } */
+
+        .middle {
+            flex: 1;
+            max-width: 1000px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -30,76 +116,230 @@
             font-size: 28px;
             font-weight: bold;
             letter-spacing: 2px;
+            text-align: center;
         }
 
-
         .timer-controls {
+            position: relative;
             border: 3px solid white;
             border-radius: 30px;
-            padding: 40px;
+            padding: 40px 30px;
             display: flex;
-            justify-content: space-around;
-            align-items: center;
+            /* flex-wrap: wrap; */
+            justify-content: center;
             gap: 40px;
+            align-items: stretch;
+            min-height: 360px;
+            width: 100%;
+            max-width: 1000px;
+            box-sizing: border-box;
+        }
+
+        .timer-controls::before,
+        .timer-controls::after {
+            content: '';
+            position: absolute;
+            top: 10%;
+            height: 80%;
+            width: 3px;
+            background-color: white;
+        }
+
+        .timer-controls::before {
+            left: 33.33%;
+        }
+
+        .timer-controls::after {
+            left: 66.66%;
         }
 
         .timer-section {
             display: flex;
             flex-direction: column;
-            align-items: center;
+            justify-content: space-between;
+            align-items: stretch;
             gap: 20px;
             position: relative;
-            padding: 0 20px;
-        }
-
-        .timer-section:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            right: -20px;
-            top: 0;
+            min-width: 260px;
+            flex: 1;
             height: 100%;
-            width: 3px;
-            background-color: white;
+            max-width: 300px;
         }
 
         .label {
+            align-self: center;
             font-size: 20px;
             font-weight: bold;
             letter-spacing: 1px;
         }
 
         .timer-button {
-            font-size: 32px;
-            padding: 15px 40px;
+            font-size: 20px;
+            height: 60px;
             border: 3px solid white;
-            border-radius: 20px;
+            border-radius: 15px;
             background: none;
             color: white;
             cursor: pointer;
             font-weight: bold;
+            width: 100%;
         }
 
         .timer-button:hover {
             background-color: rgba(255, 255, 255, 0.1);
         }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .button-row .timer-button {
+            flex: 1;
+        }
+
+        .full-width-button {
+            width: 100%;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 900px) {
+            .timer-controls {
+                flex-direction: column;
+                align-items: center;
+                padding: 30px 20px;
+            }
+
+            .timer-controls::before,
+            .timer-controls::after {
+                display: none;
+            }
+
+            .timer-section {
+                max-width: none;
+                width: 100%;
+            }
+
+            .main-label {
+                font-size: 24px;
+            }
+
+            .timer-button {
+                font-size: 18px;
+            }
+
+            /* .container {
+                flex-direction: column;
+            } */
+
+            /* .team-controls {
+                width: 100%;
+                align-items: center;
+            } */
+
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .team-controls {
+                width: 100%;
+                max-width: 400px;
+                align-items: center;
+            }
+
+            .middle {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div class="footer">
-        <div class="label main-label">TIME CONTROL</div>
-        <div class="timer-controls">
-            <div class="timer-section">
-                <div class="label">BOTH</div>
-                <button id="bothBtn" class="timer-button">Start</button>
+    <div class="container">
+        <!-- Team Home -->
+        <div class="team-controls left">
+            <div class="label">Home</div>
+            <input type="text" placeholder="Team Home" id="teamHomeInput" />
+            <div class="label">Score</div>
+            <div class="score-buttons">
+                <button id="hsp1">+1</button>
+                <button id="hsp2">+2</button>
+                <button id="hsp3">+3</button>
+                <button id="hsm1">-1</button>
+                <button id="hsm2">-2</button>
+                <button id="hsm3">-3</button>
             </div>
-            <div class="timer-section">
-                <div class="label">GAME</div>
-                <button id="gameBtn" class="timer-button">Start</button>
+            <div class="label">Foul</div>
+            <div class="foul-buttons">
+                <button id="hfp1">+1</button>
+                <button id="hfm1">-1</button>
             </div>
-            <div class="timer-section">
-                <div class="label">SHOT</div>
-                <button id="shotBtn" class="timer-button">Start</button>
+        </div>
+
+        <!-- Middle Section -->
+        <div class="middle">
+            <div class="label main-label">TIME CONTROL</div>
+            <div class="timer-controls">
+                <div class="timer-section">
+                    <div class="label">BOTH</div>
+                    <button id="bothBtn" class="timer-button">Start</button>
+                </div>
+                <div class="timer-section">
+                    <div class="label">GAME</div>
+                    <div class="button-row">
+                        <button id="add30Game" class="timer-button">+30</button>
+                        <button id="sub30Game" class="timer-button">-30</button>
+                    </div>
+                    <div class="button-row">
+                        <button id="add1Game" class="timer-button">+1</button>
+                        <button id="sub1Game" class="timer-button">-1</button>
+                    </div>
+                    <button id="gameBtn" class="timer-button full-width-button">Start</button>
+                </div>
+                <div class="timer-section">
+                    <div class="label">SHOT</div>
+                    <div class="button-row">
+                        <button id="add30Shot" class="timer-button">+30</button>
+                        <button id="sub30Shot" class="timer-button">-30</button>
+                    </div>
+                    <div class="button-row">
+                        <button id="add1Shot" class="timer-button">+1</button>
+                        <button id="sub1Shot" class="timer-button">-1</button>
+                    </div>
+                    <div class="button-row">
+                        <button id="set24Shot" class="timer-button">24</button>
+                        <button id="set14Shot" class="timer-button">14</button>
+                        <button id="set12Shot" class="timer-button">12</button>
+                    </div>
+                    <button id="shotBtn" class="timer-button full-width-button">Start</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Away -->
+        <div class="team-controls right">
+            <div class="label">Away</div>
+            <input type="text" placeholder="Team Away" id="teamAwayInput" />
+            <div class="label">Score</div>
+            <div class="score-buttons">
+                <button id="asp1">+1</button>
+                <button id="asp2">+2</button>
+                <button id="asp3">+3</button>
+                <button id="asm1">-1</button>
+                <button id="asm2">-2</button>
+                <button id="asm3">-3</button>
+            </div>
+            <div class="label">Foul</div>
+            <div class="foul-buttons">
+                <button id="afp1">+1</button>
+                <button id="afm1">-1</button>
             </div>
         </div>
     </div>
