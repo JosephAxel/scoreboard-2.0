@@ -1,7 +1,30 @@
 const channel = new BroadcastChannel('scoreboard');
-  let currentInitialShot = 12;
-  let isGameRunning = false;
-  let isShotRunning = false;
+let currentInitialShot = 12;
+let isGameRunning = false;
+let isShotRunning = false;
+
+function adjustFontSize(element) {
+  // Atur ukuran font maksimum sesuai dengan gaya CSS
+  const maxFontSize = 4.68; // Ukuran font maksimal
+  let fontSize = maxFontSize;
+
+  element.style.fontSize = fontSize + "em";
+  let marginBottom = 31.2;
+
+  const originalWhiteSpace = element.style.whiteSpace;
+  element.style.whiteSpace = 'nowrap';
+
+  // Kurangi ukuran font hingga teks muat dalam div
+  while (element.scrollWidth > element.clientWidth && fontSize > 0) {
+    console.log(element.scrollWidth + " - " + element.clientWidth);
+    fontSize -= 0.5;
+    marginBottom += 2;
+    element.style.fontSize = fontSize + "em";
+    element.style.marginBottom = marginBottom + "px";
+  }
+
+  element.style.whiteSpace = originalWhiteSpace;
+}
 
 // ===============================
 // Untuk index.html (display)
@@ -20,9 +43,20 @@ function listenForUpdates() {
       document.getElementById('team2-foul-count').textContent = data.team2Fouls;
     }
 
-    if (data.type === 'update-name') {
-      document.getElementById('team1-name').textContent = data.team1Name;
-      document.getElementById('team2-name').textContent = data.team2Name;
+    if (data.type === 'update-team-name') {
+      if (data.team === 'home') {
+        const teamNameElement = document.getElementById('team1-name');
+        if (teamNameElement) {
+          teamNameElement.textContent = data.name.toUpperCase();
+          adjustFontSize(teamNameElement);
+        }
+      } else if (data.team === 'away') {
+        const teamNameElement = document.getElementById('team2-name');
+        if (teamNameElement) {
+          teamNameElement.textContent = data.name.toUpperCase();
+          adjustFontSize(teamNameElement);
+        }
+      }
     }
 
     if (data.type === 'toggle-game-timer') {
@@ -54,6 +88,33 @@ function listenForUpdates() {
           shotClockEl.textContent = data.value;
         }
       }
+    }
+
+    if (data.type === 'adjust-shot-time') {
+      const shotClockEl = document.getElementById('shot-clock');
+      if (!shotClockEl) return;
+
+      let seconds = parseInt(shotClockEl.textContent, 10);
+      seconds += data.delta;
+
+      if (seconds < 0) seconds = 0;
+
+      shotClockEl.textContent = seconds;
+    }
+
+    if (data.type === 'adjust-game-time') {
+      const timerEl = document.getElementById('timer');
+      if (!timerEl) return;
+
+      let [minutes, seconds] = timerEl.textContent.split(':').map(Number);
+      let totalSeconds = minutes * 60 + seconds + data.delta;
+
+      if (totalSeconds < 0) totalSeconds = 0;
+
+      const newMinutes = Math.floor(totalSeconds / 60);
+      const newSeconds = totalSeconds % 60;
+
+      timerEl.textContent = `${String(newMinutes).padStart(2, '0')}:${String(newSeconds).padStart(2, '0')}`;
     }
 
 
@@ -125,8 +186,7 @@ function resetShotClock(value) {
   const shotClockEl = document.getElementById('shot-clock');
   if (!shotClockEl) return;
 
-  clearInterval(shotClockInterval); // stop yang sedang jalan
-
+  clearInterval(shotClockInterval);
   let shotSeconds = value;
   shotClockEl.textContent = shotSeconds;
 
@@ -151,16 +211,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const bothBtn = document.getElementById('bothBtn');
   const gameBtn = document.getElementById('gameBtn');
   const shotBtn = document.getElementById('shotBtn');
-  
+
   const set12ShotBtn = document.getElementById('set12Shot');
   const set14ShotBtn = document.getElementById('set14Shot');
   const set24ShotBtn = document.getElementById('set24Shot');
 
-  const add1ShotBtn = document.getElementById('add1shot');
-  const sub1ShotBtn = document.getElementById('sub1shot');
+  const add1ShotBtn = document.getElementById('add1Shot');
+  const sub1ShotBtn = document.getElementById('sub1Shot');
+
+  const add1GameBtn = document.getElementById('add1Game');
+  const sub1GameBtn = document.getElementById('sub1Game');
+  const add30GameBtn = document.getElementById('add30Game');
+  const sub30GameBtn = document.getElementById('sub30Game');
+
+  const teamHomeInput = document.getElementById('teamHomeInput');
+  const teamAwayInput = document.getElementById('teamAwayInput');
 
 
-  // Ambil status dari localStorage saat halaman dimuat
   if (localStorage.getItem('isGameRunning') !== null) {
     isGameRunning = localStorage.getItem('isGameRunning') === 'true';
   }
@@ -168,19 +235,37 @@ document.addEventListener('DOMContentLoaded', () => {
     isShotRunning = localStorage.getItem('isShotRunning') === 'true';
   }
 
+  function updateSetShotButtonsState() {
+    if (!set12ShotBtn || !set24ShotBtn || !set14ShotBtn) return;
+    set14ShotBtn.disabled = currentInitialShot === 12;
+  }
+
+  function updateAddSubShotButtonsState() {
+    if (add1ShotBtn && sub1ShotBtn) {
+      add1ShotBtn.disabled = isShotRunning;
+      sub1ShotBtn.disabled = isShotRunning;
+    }
+  }
+
+  function updateAddSubGameButtonsState() {
+    if (add1GameBtn && sub1GameBtn && add30GameBtn && sub30GameBtn) {
+      add1GameBtn.disabled = isGameRunning;
+      sub1GameBtn.disabled = isGameRunning;
+      add30GameBtn.disabled = isGameRunning;
+      sub30GameBtn.disabled = isGameRunning;
+    }
+  }
+
   function updateButtonStates() {
     if (!gameBtn || !shotBtn || !bothBtn) return;
 
     gameBtn.textContent = isGameRunning ? 'Stop' : 'Start';
     shotBtn.textContent = isShotRunning ? 'Stop' : 'Start';
-
-    if (isGameRunning && isShotRunning) {
-      bothBtn.textContent = 'Stop';
-    } else {
-      bothBtn.textContent = 'Start';
-    }
+    bothBtn.textContent = (isGameRunning && isShotRunning) ? 'Stop' : 'Start';
 
     updateSetShotButtonsState();
+    updateAddSubShotButtonsState();
+    updateAddSubGameButtonsState();
   }
 
   updateButtonStates();
@@ -232,56 +317,111 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ===============================
-  // Untuk input.html (set shot clock)
-  // ===============================
-
-  function updateSetShotButtonsState() {
-    
-    if (!set12ShotBtn || !set24ShotBtn || !set14ShotBtn) return;
-    // Tombol 12 & 24: hanya aktif kalau timer tidak jalan
-    // set12ShotBtn.disabled = isShotRunning;
-    // set24ShotBtn.disabled = isShotRunning;
-
-    // Tombol 14: hanya aktif jika shot clock tidak 12
-    set14ShotBtn.disabled = currentInitialShot === 12;
-  }
-
   if (set12ShotBtn && set14ShotBtn && set24ShotBtn) {
-    updateSetShotButtonsState();
-
     set12ShotBtn.addEventListener('click', () => {
       currentInitialShot = 12;
       updateSetShotButtonsState();
       channel.postMessage({ type: 'set-shot-time', value: 12, running: isShotRunning });
-       // Jika sedang berjalan, reset timer langsung
-      if (isShotRunning) {
-        resetShotClock(12);
-      }
+      if (isShotRunning) resetShotClock(12);
     });
 
     set14ShotBtn.addEventListener('click', () => {
       currentInitialShot = 14;
       updateSetShotButtonsState();
-      // Tombol ini hanya bisa diklik jika currentInitialShot !== 12
       if (currentInitialShot === 12) return;
       channel.postMessage({ type: 'set-shot-time', value: 14, running: isShotRunning });
-       // Jika sedang berjalan, reset timer langsung
-      if (isShotRunning) {
-        resetShotClock(14);
-      }
+      if (isShotRunning) resetShotClock(14);
     });
 
     set24ShotBtn.addEventListener('click', () => {
       currentInitialShot = 24;
       updateSetShotButtonsState();
       channel.postMessage({ type: 'set-shot-time', value: 24, running: isShotRunning });
-       // Jika sedang berjalan, reset timer langsung
-      if (isShotRunning) {
-        resetShotClock(24);
-      }
+      if (isShotRunning) resetShotClock(24);
     });
   }
+
+  function setupDynamicHoldButton(button, type, delta) {
+    let isHolding = false;
+    let holdStartTime = 0;
+    let timeoutId = null;
+
+    const MIN_INTERVAL = 80;
+    const MAX_INTERVAL = 400;
+
+    const calculateInterval = (durationHeld) => {
+      const elapsed = durationHeld;
+      const interval = MAX_INTERVAL - Math.min((elapsed / 1000) * 250, MAX_INTERVAL - MIN_INTERVAL);
+      return Math.max(MIN_INTERVAL, interval);
+    };
+
+    const repeatAction = () => {
+      if (!isHolding) return;
+
+      const heldDuration = Date.now() - holdStartTime;
+      const interval = calculateInterval(heldDuration);
+
+      channel.postMessage({ type, delta });
+
+      timeoutId = setTimeout(repeatAction, interval);
+    };
+
+    const startHold = () => {
+      if (isHolding) return;
+
+      isHolding = true;
+      holdStartTime = Date.now();
+
+      channel.postMessage({ type, delta }); // initial fire once
+      timeoutId = setTimeout(repeatAction, 300); // delay before repeating to avoid double fire
+    };
+
+    const stopHold = () => {
+      isHolding = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+
+    if (button) {
+      button.addEventListener('mousedown', startHold);
+      button.addEventListener('touchstart', startHold);
+
+      button.addEventListener('mouseup', stopHold);
+      button.addEventListener('mouseleave', stopHold);
+      button.addEventListener('touchend', stopHold);
+      button.addEventListener('touchcancel', stopHold);
+    }
+  }
+
+  // === SHOT CLOCK BUTTONS ===
+  if (add1ShotBtn && sub1ShotBtn) {
+    setupDynamicHoldButton(add1ShotBtn, 'adjust-shot-time', 1);
+    setupDynamicHoldButton(sub1ShotBtn, 'adjust-shot-time', -1);
+  }
+
+  // === GAME CLOCK BUTTONS ===
+  if (add1GameBtn && sub1GameBtn && add30GameBtn && sub30GameBtn) {
+    setupDynamicHoldButton(add1GameBtn, 'adjust-game-time', 1);
+    setupDynamicHoldButton(sub1GameBtn, 'adjust-game-time', -1);
+    setupDynamicHoldButton(add30GameBtn, 'adjust-game-time', 30);
+    setupDynamicHoldButton(sub30GameBtn, 'adjust-game-time', -30);
+  }
+
+
+  if (teamHomeInput && teamAwayInput) {
+    teamHomeInput.addEventListener('input', (event) => {
+      const newValue = event.target.value;
+      channel.postMessage({ type: 'update-team-name', team: 'home', name: newValue });
+    });
+
+    teamAwayInput.addEventListener('input', (event) => {
+      const newValue = event.target.value;
+      channel.postMessage({ type: 'update-team-name', team: 'away', name: newValue });
+    });
+  }
+
 
   if (window.location.pathname.endsWith('input.html')) {
     // ===============================
@@ -289,6 +429,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===============================
     document.addEventListener('keydown', (event) => {
       const key = event.key;
+      const activeElement = document.activeElement;
+      const activeTag = activeElement.tagName;
+
+      const isTyping = (
+        activeTag === 'INPUT' ||
+        activeTag === 'TEXTAREA' ||
+        activeElement.isContentEditable
+      );
+
+      if (isTyping) {
+        // Kalau pencet Enter saat sedang ngetik, blur input agar kembali ke "page"
+        if (key === 'Enter') {
+          activeElement.blur();
+        }
+        return; // hindari hotkey lain saat mengetik
+      }
 
       if (key === ' ') {
         if (currentInitialShot === 12) {
@@ -308,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameBtn.click();
       } else if (key === ']' || key === '}') {
         shotBtn.click();
-      } else if (key === 'p' || key === 'P'){
+      } else if (key === 'p' || key === 'P') {
         bothBtn.click();
       }
     });
