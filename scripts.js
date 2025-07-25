@@ -33,9 +33,46 @@ function listenForUpdates() {
   channel.onmessage = (event) => {
     const data = event.data;
 
-    if (data.type === 'update-score') {
-      document.getElementById('team1-score').textContent = data.team1Score;
-      document.getElementById('team2-score').textContent = data.team2Score;
+    if (data.type === 'adjust-home-score') {
+      const homeScore = document.getElementById('team1-score');
+      if (!homeScore) return;
+      let score = parseInt(homeScore.textContent, 10);
+      score += data.delta;
+
+      if (score < 0) score = 0;
+      homeScore.textContent = score;
+    }
+
+    if (data.type === 'adjust-home-foul') {
+      const homeFoul = document.getElementById('team1-foul-count');
+      if (!homeFoul) return;
+      let foul = parseInt(homeFoul.textContent, 10);
+      foul += data.delta;
+
+      if (foul < 0) foul = 0;
+      // homeFoul.textContent = foul;
+      criticalFoul(homeFoul, foul);
+    }
+
+    if (data.type === 'adjust-away-score') {
+      const awayScore = document.getElementById('team2-score');
+      if (!awayScore) return;
+      let score = parseInt(awayScore.textContent, 10);
+      score += data.delta;
+
+      if (score < 0) score = 0;
+      awayScore.textContent = score;
+    }
+
+    if (data.type === 'adjust-away-foul') {
+      const awayFoul = document.getElementById('team2-foul-count');
+      if (!awayFoul) return;
+      let foul = parseInt(awayFoul.textContent, 10);
+      foul += data.delta;
+
+      if (foul < 0) foul = 0;
+      // awayFoul.textContent = foul;
+      criticalFoul(awayFoul, foul);
     }
 
     if (data.type === 'update-foul') {
@@ -85,7 +122,7 @@ function listenForUpdates() {
         if (data.running) {
           resetShotClock(data.value);
         } else {
-          shotClockEl.textContent = data.value;
+          criticalShotClock(shotClockEl, data.value);
         }
       }
     }
@@ -99,7 +136,8 @@ function listenForUpdates() {
 
       if (seconds < 0) seconds = 0;
 
-      shotClockEl.textContent = seconds;
+      // shotClockEl.textContent = seconds;
+      criticalShotClock(shotClockEl, seconds);
     }
 
     if (data.type === 'adjust-game-time') {
@@ -171,6 +209,7 @@ function startShotClock() {
   shotClockInterval = setInterval(() => {
     if (shotSeconds === 0) {
       clearInterval(shotClockInterval);
+      channel.postMessage({ type: 'shot-clock-zero' });
 
       shotClockBeep.currentTime = 0;
       shotClockBeep.play().catch(e => console.warn("Audio play blocked:", e));
@@ -178,7 +217,8 @@ function startShotClock() {
     }
 
     shotSeconds--;
-    shotClockEl.textContent = shotSeconds;
+    // shotClockEl.textContent = shotSeconds;
+    criticalShotClock(shotClockEl, shotSeconds);
   }, 1000);
 }
 
@@ -199,9 +239,29 @@ function resetShotClock(value) {
     }
 
     shotSeconds--;
-    shotClockEl.textContent = shotSeconds;
+    // shotClockEl.textContent = shotSeconds;
+    criticalShotClock(shotClockEl, shotSeconds);
   }, 1000);
 }
+
+function criticalShotClock(element, score) {
+  element.textContent = score < 10 ? `0${score}` : score;
+  if (score <= 5) {
+    element.classList.add('red');
+  } else {
+    element.classList.remove('red');
+  }
+}
+
+function criticalFoul(element, score) {
+  element.textContent = score;
+  if (score >= 5) {
+    element.classList.add('red');
+  } else {
+    element.classList.remove('red');
+  }
+}
+
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -226,6 +286,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const teamHomeInput = document.getElementById('teamHomeInput');
   const teamAwayInput = document.getElementById('teamAwayInput');
+  const add1ScoreHomeBtn = document.getElementById('hsp1');
+  const add2ScoreHomeBtn = document.getElementById('hsp2');
+  const add3ScoreHomeBtn = document.getElementById('hsp3');
+  const sub1ScoreHomeBtn = document.getElementById('hsm1');
+  const sub2ScoreHomeBtn = document.getElementById('hsm2');
+  const sub3ScoreHomeBtn = document.getElementById('hsm3');
+  const add1FoulHomeBtn = document.getElementById('hfp1');
+  const sub1FoulHomeBtn = document.getElementById('hfm1');
+
+  const add1ScoreAwayBtn = document.getElementById('asp1');
+  const add2ScoreAwayBtn = document.getElementById('asp2');
+  const add3ScoreAwayBtn = document.getElementById('asp3');
+  const sub1ScoreAwayBtn = document.getElementById('asm1');
+  const sub2ScoreAwayBtn = document.getElementById('asm2');
+  const sub3ScoreAwayBtn = document.getElementById('asm3');
+  const add1FoulAwayBtn = document.getElementById('afp1');
+  const sub1FoulAwayBtn = document.getElementById('afm1');
 
 
   if (localStorage.getItem('isGameRunning') !== null) {
@@ -410,6 +487,39 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
+  // === HOME SCORE BUTTONS ===
+  if (add1ScoreHomeBtn && add2ScoreHomeBtn && add3ScoreHomeBtn && sub1ScoreHomeBtn && sub2ScoreHomeBtn && sub3ScoreHomeBtn) {
+    setupDynamicHoldButton(add1ScoreHomeBtn, 'adjust-home-score', 1);
+    setupDynamicHoldButton(add2ScoreHomeBtn, 'adjust-home-score', 2);
+    setupDynamicHoldButton(add3ScoreHomeBtn, 'adjust-home-score', 3);
+    setupDynamicHoldButton(sub1ScoreHomeBtn, 'adjust-home-score', -1);
+    setupDynamicHoldButton(sub2ScoreHomeBtn, 'adjust-home-score', -2);
+    setupDynamicHoldButton(sub3ScoreHomeBtn, 'adjust-home-score', -3);
+  }
+
+  // === HOME FOUL BUTTONS ===
+  if (add1FoulHomeBtn && sub1FoulHomeBtn) {
+    setupDynamicHoldButton(add1FoulHomeBtn, 'adjust-home-foul', 1);
+    setupDynamicHoldButton(sub1FoulHomeBtn, 'adjust-home-foul', -1);
+  }
+
+
+  // === AWAY SCORE BUTTONS ===
+  if (add1ScoreAwayBtn && add2ScoreAwayBtn && add3ScoreAwayBtn && sub1ScoreAwayBtn && sub2ScoreAwayBtn && sub3ScoreAwayBtn) {
+    setupDynamicHoldButton(add1ScoreAwayBtn, 'adjust-away-score', 1);
+    setupDynamicHoldButton(add2ScoreAwayBtn, 'adjust-away-score', 2);
+    setupDynamicHoldButton(add3ScoreAwayBtn, 'adjust-away-score', 3);
+    setupDynamicHoldButton(sub1ScoreAwayBtn, 'adjust-away-score', -1);
+    setupDynamicHoldButton(sub2ScoreAwayBtn, 'adjust-away-score', -2);
+    setupDynamicHoldButton(sub3ScoreAwayBtn, 'adjust-away-score', -3);
+  }
+
+  // === AWAY FOUL BUTTONS ===
+  if (add1FoulAwayBtn && sub1FoulAwayBtn) {
+    setupDynamicHoldButton(add1FoulAwayBtn, 'adjust-away-foul', 1);
+    setupDynamicHoldButton(sub1FoulAwayBtn, 'adjust-away-foul', -1);
+  }
+
   if (teamHomeInput && teamAwayInput) {
     teamHomeInput.addEventListener('input', (event) => {
       const newValue = event.target.value;
@@ -468,5 +578,17 @@ document.addEventListener('DOMContentLoaded', () => {
         bothBtn.click();
       }
     });
+  }
+
+  if (shotBtn) {
+    channel.onmessage = (event) => {
+      const data = event.data;
+
+      if (data.type === 'shot-clock-zero') {
+        if (isShotRunning) {
+          shotBtn.click();
+        }
+      }
+    };
   }
 });
