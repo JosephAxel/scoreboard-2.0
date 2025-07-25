@@ -129,3 +129,10 @@ button {
     padding: 15.6px 31.2px; /* Increased by 30% from 12px 24px */
     font-size: 2.34em; /* Increased by 30% from 1.8em */
 }
+
+#team1-name, #team2-name {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}

@@ -12,19 +12,26 @@ function adjustFontSize(element) {
   let marginBottom = 31.2;
 
   const originalWhiteSpace = element.style.whiteSpace;
-  element.style.whiteSpace = 'nowrap';
+  const originalOverflow = element.style.overflow;
 
-  // Kurangi ukuran font hingga teks muat dalam div
+  // Paksa teks tetap dalam satu baris dan sembunyikan overflow
+  element.style.whiteSpace = 'nowrap';
+  element.style.overflow = 'hidden';
+
+  // Kurangi ukuran font sampai teks muat dalam lebar kontainer
   while (element.scrollWidth > element.clientWidth && fontSize > 0) {
-    console.log(element.scrollWidth + " - " + element.clientWidth);
+    // console.log(element.scrollWidth + " - " + element.clientWidth);
     fontSize -= 0.5;
     marginBottom += 2;
     element.style.fontSize = fontSize + "em";
     element.style.marginBottom = marginBottom + "px";
   }
 
+  // Kembalikan properti ke semula
   element.style.whiteSpace = originalWhiteSpace;
+  element.style.overflow = originalOverflow;
 }
+
 
 // ===============================
 // Untuk index.html (display)
