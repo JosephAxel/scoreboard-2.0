@@ -1,5 +1,5 @@
 const channel = new BroadcastChannel('scoreboard');
-  let currentInitialShot = 24; // 🔁 Global var untuk kontrol logika tombol 14
+  let currentInitialShot = 12;
   let isGameRunning = false;
   let isShotRunning = false;
 
@@ -156,6 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const set14ShotBtn = document.getElementById('set14Shot');
   const set24ShotBtn = document.getElementById('set24Shot');
 
+  const add1ShotBtn = document.getElementById('add1shot');
+  const sub1ShotBtn = document.getElementById('sub1shot');
+
 
   // Ambil status dari localStorage saat halaman dimuat
   if (localStorage.getItem('isGameRunning') !== null) {
@@ -212,8 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     shotBtn.addEventListener('click', () => {
-      console.log('isGameRunning: ', isGameRunning);
-      console.log('isShotRunning: ', isShotRunning);
       isShotRunning = !isShotRunning;
       localStorage.setItem('isShotRunning', isShotRunning);
 
@@ -255,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
       channel.postMessage({ type: 'set-shot-time', value: 12, running: isShotRunning });
        // Jika sedang berjalan, reset timer langsung
       if (isShotRunning) {
-        resetShotClock(14);
+        resetShotClock(12);
       }
     });
 
@@ -277,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
       channel.postMessage({ type: 'set-shot-time', value: 24, running: isShotRunning });
        // Jika sedang berjalan, reset timer langsung
       if (isShotRunning) {
-        resetShotClock(14);
+        resetShotClock(24);
       }
     });
   }
@@ -290,7 +291,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const key = event.key;
 
       if (key === ' ') {
-        // resetShotClock(currentInitialShot);
+        if (currentInitialShot === 12) {
+          set12ShotBtn.click();
+        } else if (currentInitialShot === 14) {
+          set14ShotBtn.click();
+        } else {
+          set24ShotBtn.click();
+        }
+
+        if (!isShotRunning) {
+          shotBtn.click();
+        }
+
         event.preventDefault(); // mencegah scroll saat tekan spasi
       } else if (key === '[' || key === '{') {
         gameBtn.click();
