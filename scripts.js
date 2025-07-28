@@ -2,6 +2,17 @@ const channel = new BroadcastChannel('scoreboard');
 let currentInitialShot = 12;
 let isGameRunning = false;
 let isShotRunning = false;
+let homeName = 'HOME';
+let awayName = 'AWAY';
+let homeScore = 0;
+let awayScore = 0;
+let homeFoul = 0;
+let awayFoul = 0;
+let currentGameTime = 0;
+let currentShotClock = 0;
+let gameTimerInterval = null;
+let shotClockInterval = null;
+const shotClockBeep = new Audio('assets/buzzer.mp3');
 
 function adjustFontSize(element) {
   // Atur ukuran font maksimum sesuai dengan gaya CSS
@@ -20,7 +31,6 @@ function adjustFontSize(element) {
 
   // Kurangi ukuran font sampai teks muat dalam lebar kontainer
   while (element.scrollWidth > element.clientWidth && fontSize > 0) {
-    // console.log(element.scrollWidth + " - " + element.clientWidth);
     fontSize -= 0.5;
     marginBottom += 2;
     element.style.fontSize = fontSize + "em";
@@ -40,85 +50,58 @@ function listenForUpdates() {
   channel.onmessage = (event) => {
     const data = event.data;
 
-    if (data.type === 'adjust-home-score') {
-      const homeScore = document.getElementById('team1-score');
-      if (!homeScore) return;
-      let score = parseInt(homeScore.textContent, 10);
-      score += data.delta;
+    if (data.type === 'reset') {
+      // Hapus semua data dari localStorage
+      localStorage.clear();
+      location.reload();
+    }
 
-      if (score < 0) score = 0;
-      homeScore.textContent = score;
+    if (data.type === 'adjust-home-score') {
+      const homeScoreElement = document.getElementById('team1-score');
+      adjustScore(homeScoreElement, data.delta);
+      localStorage.setItem('homeScore', homeScoreElement.textContent);
     }
 
     if (data.type === 'adjust-home-foul') {
-      const homeFoul = document.getElementById('team1-foul-count');
-      if (!homeFoul) return;
-      let foul = parseInt(homeFoul.textContent, 10);
-      foul += data.delta;
-
-      if (foul < 0) foul = 0;
-      // homeFoul.textContent = foul;
-      criticalFoul(homeFoul, foul);
+      const homeFoulElement = document.getElementById('team1-foul-count');
+      adjustFoul(homeFoulElement, data.delta);
+      localStorage.setItem('homeFoul', homeFoulElement.textContent);
     }
 
     if (data.type === 'adjust-away-score') {
-      const awayScore = document.getElementById('team2-score');
-      if (!awayScore) return;
-      let score = parseInt(awayScore.textContent, 10);
-      score += data.delta;
-
-      if (score < 0) score = 0;
-      awayScore.textContent = score;
+      const awayScoreElement = document.getElementById('team2-score');
+      adjustScore(awayScoreElement, data.delta);
+      localStorage.setItem('awayScore', awayScoreElement.textContent);
     }
 
     if (data.type === 'adjust-away-foul') {
-      const awayFoul = document.getElementById('team2-foul-count');
-      if (!awayFoul) return;
-      let foul = parseInt(awayFoul.textContent, 10);
-      foul += data.delta;
-
-      if (foul < 0) foul = 0;
-      // awayFoul.textContent = foul;
-      criticalFoul(awayFoul, foul);
-    }
-
-    if (data.type === 'update-foul') {
-      document.getElementById('team1-foul-count').textContent = data.team1Fouls;
-      document.getElementById('team2-foul-count').textContent = data.team2Fouls;
+      const awayFoulElement = document.getElementById('team2-foul-count');
+      adjustFoul(awayFoulElement, data.delta);
+      localStorage.setItem('awayFoul', awayFoulElement.textContent);
     }
 
     if (data.type === 'update-team-name') {
       if (data.team === 'home') {
         const teamNameElement = document.getElementById('team1-name');
-        if (teamNameElement) {
-          teamNameElement.textContent = data.name.toUpperCase();
-          adjustFontSize(teamNameElement);
-        }
+        updateTeamName(teamNameElement, data.name);
       } else if (data.team === 'away') {
         const teamNameElement = document.getElementById('team2-name');
-        if (teamNameElement) {
-          teamNameElement.textContent = data.name.toUpperCase();
-          adjustFontSize(teamNameElement);
-        }
+        updateTeamName(teamNameElement, data.name);
       }
     }
 
     if (data.type === 'toggle-game-timer') {
       if (data.running) {
-        console.log('game start')
         startGameTimer();
       } else {
-        console.log('game stop')
         clearInterval(gameTimerInterval);
       }
     }
 
     if (data.type === 'toggle-shot-timer') {
       if (data.running) {
-        console.log('shot start')
-        startShotClock();
+        startOrResetShotClock();
       } else {
-        console.log('shot stop')
         clearInterval(shotClockInterval);
       }
     }
@@ -127,8 +110,9 @@ function listenForUpdates() {
       const shotClockEl = document.getElementById('shot-clock');
       if (shotClockEl) {
         if (data.running) {
-          resetShotClock(data.value);
+          startOrResetShotClock(data.value);
         } else {
+          localStorage.setItem('currentShotClock', data.value);
           criticalShotClock(shotClockEl, data.value);
         }
       }
@@ -142,8 +126,8 @@ function listenForUpdates() {
       seconds += data.delta;
 
       if (seconds < 0) seconds = 0;
-
-      // shotClockEl.textContent = seconds;
+      
+      localStorage.setItem('currentShotClock', seconds);
       criticalShotClock(shotClockEl, seconds);
     }
 
@@ -159,23 +143,120 @@ function listenForUpdates() {
       const newMinutes = Math.floor(totalSeconds / 60);
       const newSeconds = totalSeconds % 60;
 
-      timerEl.textContent = `${String(newMinutes).padStart(2, '0')}:${String(newSeconds).padStart(2, '0')}`;
+      const timeStr = `${String(newMinutes).padStart(2, '0')}:${String(newSeconds).padStart(2, '0')}`;
+      timerEl.textContent = timeStr;
+      localStorage.setItem('currentGameTime', timeStr);
     }
 
 
   };
 }
 
+function loadLocalStorage(){
+  const teamHomeName = document.getElementById('team1-name');
+  const teamAwayName = document.getElementById('team2-name');
+  const homeScoreElement = document.getElementById('team1-score');
+  const awayScoreElement = document.getElementById('team2-score');
+  const homeFoulElement = document.getElementById('team1-foul-count');
+  const awayFoulElement = document.getElementById('team2-foul-count');
+  const timerEl = document.getElementById('timer');
+  const shotClockEl = document.getElementById('shot-clock');
+
+  if (localStorage.getItem('homeName') !== null) {
+    homeName = localStorage.getItem('homeName');  
+    updateTeamName(teamHomeName, homeName);
+  }
+
+
+  if (localStorage.getItem('awayName') !== null) {
+    awayName = localStorage.getItem('awayName');  
+    updateTeamName(teamAwayName, awayName);
+  }
+
+  if (localStorage.getItem('homeScore') !== null) {
+    homeScore = parseInt(localStorage.getItem("homeScore"), 10);
+    adjustScore(homeScoreElement, homeScore);
+  }
+
+  if (localStorage.getItem('awayScore') !== null) {
+    awayScore = parseInt(localStorage.getItem("awayScore"), 10);
+    adjustScore(awayScoreElement, awayScore);
+  }
+
+  if (localStorage.getItem('homeFoul') !== null) {
+    homeFoul = parseInt(localStorage.getItem("homeFoul"), 10);
+    adjustFoul(homeFoulElement, homeFoul);
+  }
+
+  if (localStorage.getItem('awayFoul') !== null) {
+    awayFoul = parseInt(localStorage.getItem("awayFoul"), 10);
+    adjustFoul(awayFoulElement, awayFoul);
+  }
+
+  if (localStorage.getItem('isGameRunning') !== null) {
+    isGameRunning = localStorage.getItem('isGameRunning') === 'true';
+  }
+  if (localStorage.getItem('isShotRunning') !== null) {
+    isShotRunning = localStorage.getItem('isShotRunning') === 'true';
+  }
+
+  if (localStorage.getItem('currentGameTime') !== null) {
+    currentGameTime = localStorage.getItem('currentGameTime');
+    if (timerEl) timerEl.textContent = currentGameTime;
+    if (isGameRunning) {
+        startGameTimer();
+      } else {
+        clearInterval(gameTimerInterval);
+      }
+  }
+
+  if (localStorage.getItem('currentShotClock') !== null) {
+    currentShotClock = localStorage.getItem('currentShotClock');
+    if (shotClockEl) shotClockEl.textContent = currentShotClock;
+    if (isShotRunning) {
+        startOrResetShotClock(currentShotClock);
+      } else {
+        criticalShotClock(shotClockEl, currentShotClock);
+      }
+  }
+}
+
+function updateTeamName(element, value){
+  if (element){
+      element.textContent = value.toUpperCase();
+      adjustFontSize(element);
+    }
+}
+
+function adjustScore(element, delta){
+  if (element){
+    let score = parseInt(element.textContent, 10);
+    score += delta;
+
+    if (score < 0) score = 0;
+    element.textContent = score;
+  }
+}
+
+function adjustFoul(element, delta){
+  if (element) {
+    let foul = parseInt(element.textContent, 10);
+    foul += delta;
+
+    if (foul < 0) foul = 0;
+    criticalFoul(element, foul);
+  }
+}
+
 if (document.getElementById('team1-score')) {
+  loadLocalStorage();
   listenForUpdates();
 }
 
 // ===============================
 // Logic timer & shot clock
 // ===============================
-let gameTimerInterval = null;
-let shotClockInterval = null;
-const shotClockBeep = new Audio('assets/buzzer.mp3');
+
 
 function startGameTimer() {
   const timerEl = document.getElementById('timer');
@@ -199,55 +280,35 @@ function startGameTimer() {
       seconds--;
     }
 
-    timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    timerEl.textContent = timeStr;
+    localStorage.setItem('currentGameTime', timeStr);
   }, 1000);
 }
 
-
-function startShotClock() {
+function startOrResetShotClock(value = null) {
   const shotClockEl = document.getElementById('shot-clock');
   if (!shotClockEl) return;
 
-  // 🔧 Stop interval sebelumnya jika ada
   clearInterval(shotClockInterval);
 
-  let shotSeconds = parseInt(shotClockEl.textContent, 10);
+  // Ambil dari parameter jika ada, jika tidak ambil dari textContent
+  let shotSeconds = value !== null ? value : parseInt(shotClockEl.textContent, 10);
+
+  criticalShotClock(shotClockEl, shotSeconds); // update awal sebelum interval mulai
 
   shotClockInterval = setInterval(() => {
     if (shotSeconds === 0) {
       clearInterval(shotClockInterval);
-      channel.postMessage({ type: 'shot-clock-zero' });
-
+      channel?.postMessage?.({ type: 'shot-clock-zero' });
       shotClockBeep.currentTime = 0;
       shotClockBeep.play().catch(e => console.warn("Audio play blocked:", e));
       return;
     }
 
     shotSeconds--;
-    // shotClockEl.textContent = shotSeconds;
     criticalShotClock(shotClockEl, shotSeconds);
-  }, 1000);
-}
-
-function resetShotClock(value) {
-  const shotClockEl = document.getElementById('shot-clock');
-  if (!shotClockEl) return;
-
-  clearInterval(shotClockInterval);
-  let shotSeconds = value;
-  shotClockEl.textContent = shotSeconds;
-
-  shotClockInterval = setInterval(() => {
-    if (shotSeconds === 0) {
-      clearInterval(shotClockInterval);
-      shotClockBeep.currentTime = 0;
-      shotClockBeep.play().catch(e => console.warn("Audio play blocked:", e));
-      return;
-    }
-
-    shotSeconds--;
-    // shotClockEl.textContent = shotSeconds;
-    criticalShotClock(shotClockEl, shotSeconds);
+    localStorage.setItem('currentShotClock', shotSeconds);
   }, 1000);
 }
 
@@ -311,6 +372,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const add1FoulAwayBtn = document.getElementById('afp1');
   const sub1FoulAwayBtn = document.getElementById('afm1');
 
+  const resetButton = document.getElementById('resetButton');
+
   function setupInputLock(input, buttonId, iconId) {
     const button = document.getElementById(buttonId);
     const icon = document.getElementById(iconId);
@@ -333,6 +396,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (localStorage.getItem('isShotRunning') !== null) {
     isShotRunning = localStorage.getItem('isShotRunning') === 'true';
+  }
+
+  if (localStorage.getItem('homeName') !== null) {
+    homeName = localStorage.getItem('homeName');
+    if (teamHomeInput){
+      teamHomeInput.value = homeName;
+    }
+  }
+
+  if (localStorage.getItem('awayName') !== null) {
+    awayName = localStorage.getItem('awayName');
+    if (teamAwayInput) {
+      teamAwayInput.value = awayName;
+    }
+  }
+
+  if (localStorage.getItem('currentInitialShot') !== null) {
+    currentInitialShot = parseInt(localStorage.getItem('currentInitialShot'), 10);
+    updateSetShotButtonsState();
   }
 
   function updateSetShotButtonsState() {
@@ -420,24 +502,27 @@ document.addEventListener('DOMContentLoaded', () => {
   if (set12ShotBtn && set14ShotBtn && set24ShotBtn) {
     set12ShotBtn.addEventListener('click', () => {
       currentInitialShot = 12;
+      localStorage.setItem('currentInitialShot', currentInitialShot);
       updateSetShotButtonsState();
       channel.postMessage({ type: 'set-shot-time', value: 12, running: isShotRunning });
-      if (isShotRunning) resetShotClock(12);
+      if (isShotRunning) startOrResetShotClock(12);
     });
 
     set14ShotBtn.addEventListener('click', () => {
       currentInitialShot = 14;
+      localStorage.setItem('currentInitialShot', currentInitialShot);
       updateSetShotButtonsState();
       if (currentInitialShot === 12) return;
       channel.postMessage({ type: 'set-shot-time', value: 14, running: isShotRunning });
-      if (isShotRunning) resetShotClock(14);
+      if (isShotRunning) startOrResetShotClock(14);
     });
 
     set24ShotBtn.addEventListener('click', () => {
       currentInitialShot = 24;
+      localStorage.setItem('currentInitialShot', currentInitialShot);
       updateSetShotButtonsState();
       channel.postMessage({ type: 'set-shot-time', value: 24, running: isShotRunning });
-      if (isShotRunning) resetShotClock(24);
+      if (isShotRunning) startOrResetShotClock(24);
     });
   }
 
@@ -564,15 +649,30 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDynamicHoldButton(sub1FoulAwayBtn, 'adjust-away-foul', -1, 'n');
   }
 
+  // === Team Name Input ===
   if (teamHomeInput && teamAwayInput) {
     teamHomeInput.addEventListener('input', (event) => {
       const newValue = event.target.value;
+      localStorage.setItem('homeName', newValue);
       channel.postMessage({ type: 'update-team-name', team: 'home', name: newValue });
     });
 
     teamAwayInput.addEventListener('input', (event) => {
       const newValue = event.target.value;
+      localStorage.setItem('awayName', newValue);
       channel.postMessage({ type: 'update-team-name', team: 'away', name: newValue });
+    });
+  }
+
+  if (resetButton) {
+    resetButton.addEventListener("click", () => {
+      // Hapus semua data dari localStorage
+      localStorage.clear();
+
+      channel.postMessage({ type: 'reset'});
+
+      // (Opsional) Reset tampilan antarmuka
+      location.reload(); // Me-reload halaman agar semua input kembali ke default
     });
   }
 
