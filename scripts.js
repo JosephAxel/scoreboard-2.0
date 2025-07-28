@@ -315,11 +315,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const button = document.getElementById(buttonId);
     const icon = document.getElementById(iconId);
 
-    button.addEventListener("click", () => {
-      const isDisabled = input.disabled;
-      input.disabled = !isDisabled;
-      icon.src = isDisabled ? "assets/unlock.png" : "assets/lock.png";
-    });
+    if (button) {
+      button.addEventListener("click", () => {
+        const isDisabled = input.disabled;
+        input.disabled = !isDisabled;
+        icon.src = isDisabled ? "assets/unlock.png" : "assets/lock.png";
+      });
+    }
   }
 
   setupInputLock(teamHomeInput, "teamHomeLockBtn", "teamHomeLockIcon");
