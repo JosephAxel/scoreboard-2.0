@@ -311,6 +311,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const add1FoulAwayBtn = document.getElementById('afp1');
   const sub1FoulAwayBtn = document.getElementById('afm1');
 
+  function setupInputLock(input, buttonId, iconId) {
+    const button = document.getElementById(buttonId);
+    const icon = document.getElementById(iconId);
+
+    button.addEventListener("click", () => {
+      const isDisabled = input.disabled;
+      input.disabled = !isDisabled;
+      icon.src = isDisabled ? "assets/unlock.png" : "assets/lock.png";
+    });
+  }
+
+  setupInputLock(teamHomeInput, "teamHomeLockBtn", "teamHomeLockIcon");
+  setupInputLock(teamAwayInput, "teamAwayLockBtn", "teamAwayLockIcon");
+
 
   if (localStorage.getItem('isGameRunning') !== null) {
     isGameRunning = localStorage.getItem('isGameRunning') === 'true';
@@ -425,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function setupDynamicHoldButton(button, type, delta) {
+  function setupDynamicHoldButton(button, type, delta, keyShortcut = null) {
     let isHolding = false;
     let holdStartTime = 0;
     let timeoutId = null;
@@ -477,6 +491,27 @@ document.addEventListener('DOMContentLoaded', () => {
       button.addEventListener('touchend', stopHold);
       button.addEventListener('touchcancel', stopHold);
     }
+
+    // ✅ Tambahkan key shortcut jika diberikan
+  if (keyShortcut) {
+    window.addEventListener('keydown', (event) => {
+      if (
+        document.activeElement.tagName !== 'INPUT' &&
+        document.activeElement.tagName !== 'TEXTAREA' &&
+        !document.activeElement.isContentEditable &&
+        event.key.toLowerCase() === keyShortcut &&
+        !event.repeat
+      ) {
+        startHold();
+      }
+    });
+
+    window.addEventListener('keyup', (event) => {
+      if (event.key.toLowerCase() === keyShortcut) {  
+        stopHold();
+      }
+    });
+  }
   }
 
   // === SHOT CLOCK BUTTONS ===
@@ -489,42 +524,42 @@ document.addEventListener('DOMContentLoaded', () => {
   if (add1GameBtn && sub1GameBtn && add30GameBtn && sub30GameBtn) {
     setupDynamicHoldButton(add1GameBtn, 'adjust-game-time', 1);
     setupDynamicHoldButton(sub1GameBtn, 'adjust-game-time', -1);
-    setupDynamicHoldButton(add30GameBtn, 'adjust-game-time', 30);
-    setupDynamicHoldButton(sub30GameBtn, 'adjust-game-time', -30);
+    setupDynamicHoldButton(add30GameBtn, 'adjust-game-time', 30, '=');
+    setupDynamicHoldButton(sub30GameBtn, 'adjust-game-time', -30, '-');
   }
 
 
   // === HOME SCORE BUTTONS ===
   if (add1ScoreHomeBtn && add2ScoreHomeBtn && add3ScoreHomeBtn && sub1ScoreHomeBtn && sub2ScoreHomeBtn && sub3ScoreHomeBtn) {
-    setupDynamicHoldButton(add1ScoreHomeBtn, 'adjust-home-score', 1);
+    setupDynamicHoldButton(add1ScoreHomeBtn, 'adjust-home-score', 1, 's');
     setupDynamicHoldButton(add2ScoreHomeBtn, 'adjust-home-score', 2);
     setupDynamicHoldButton(add3ScoreHomeBtn, 'adjust-home-score', 3);
-    setupDynamicHoldButton(sub1ScoreHomeBtn, 'adjust-home-score', -1);
+    setupDynamicHoldButton(sub1ScoreHomeBtn, 'adjust-home-score', -1, 'a');
     setupDynamicHoldButton(sub2ScoreHomeBtn, 'adjust-home-score', -2);
     setupDynamicHoldButton(sub3ScoreHomeBtn, 'adjust-home-score', -3);
   }
 
   // === HOME FOUL BUTTONS ===
   if (add1FoulHomeBtn && sub1FoulHomeBtn) {
-    setupDynamicHoldButton(add1FoulHomeBtn, 'adjust-home-foul', 1);
-    setupDynamicHoldButton(sub1FoulHomeBtn, 'adjust-home-foul', -1);
+    setupDynamicHoldButton(add1FoulHomeBtn, 'adjust-home-foul', 1, 'x');
+    setupDynamicHoldButton(sub1FoulHomeBtn, 'adjust-home-foul', -1, 'z');
   }
 
 
   // === AWAY SCORE BUTTONS ===
   if (add1ScoreAwayBtn && add2ScoreAwayBtn && add3ScoreAwayBtn && sub1ScoreAwayBtn && sub2ScoreAwayBtn && sub3ScoreAwayBtn) {
-    setupDynamicHoldButton(add1ScoreAwayBtn, 'adjust-away-score', 1);
+    setupDynamicHoldButton(add1ScoreAwayBtn, 'adjust-away-score', 1, 'l');
     setupDynamicHoldButton(add2ScoreAwayBtn, 'adjust-away-score', 2);
     setupDynamicHoldButton(add3ScoreAwayBtn, 'adjust-away-score', 3);
-    setupDynamicHoldButton(sub1ScoreAwayBtn, 'adjust-away-score', -1);
+    setupDynamicHoldButton(sub1ScoreAwayBtn, 'adjust-away-score', -1, 'k');
     setupDynamicHoldButton(sub2ScoreAwayBtn, 'adjust-away-score', -2);
     setupDynamicHoldButton(sub3ScoreAwayBtn, 'adjust-away-score', -3);
   }
 
   // === AWAY FOUL BUTTONS ===
   if (add1FoulAwayBtn && sub1FoulAwayBtn) {
-    setupDynamicHoldButton(add1FoulAwayBtn, 'adjust-away-foul', 1);
-    setupDynamicHoldButton(sub1FoulAwayBtn, 'adjust-away-foul', -1);
+    setupDynamicHoldButton(add1FoulAwayBtn, 'adjust-away-foul', 1, 'm');
+    setupDynamicHoldButton(sub1FoulAwayBtn, 'adjust-away-foul', -1, 'n');
   }
 
   if (teamHomeInput && teamAwayInput) {

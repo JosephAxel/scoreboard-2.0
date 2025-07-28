@@ -181,6 +181,33 @@
             cursor: not-allowed;
         }
 
+        .input-lock-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%; /* Membatasi lebar sesuai parent (team-controls) */
+            box-sizing: border-box; /* Pastikan padding dihitung dalam width */
+        }
+
+        .input-lock-wrapper input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .input-lock-wrapper button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            flex-shrink: 0; /* Mencegah gambar mengecil */
+        }
+        .input-lock-wrapper input:disabled {
+            color: white;
+            background-color: #333; /* opsional: biar kontras tetap bagus */
+            opacity: 1; /* defaultnya biasanya jadi 0.5, ini supaya terlihat jelas */
+        }
+
+
         @media (max-width: 900px) {
             .timer-controls {
                 flex-direction: column;
@@ -230,7 +257,12 @@
         <!-- Team Home -->
         <div class="team-controls left">
             <div class="label">Home</div>
-            <input type="text" placeholder="Team Home" value="Home" id="teamHomeInput" />
+            <div class="input-lock-wrapper">
+                <input type="text" placeholder="Team Home" value="Home" id="teamHomeInput" />
+                <button id="teamHomeLockBtn">
+                    <img id="teamHomeLockIcon" src="assets/unlock.png" alt="Lock Icon" width="24" height="24">
+                </button>
+            </div>
             <div class="label">Score</div>
             <div class="score-buttons">
                 <button id="hsp1">+1</button>
@@ -286,7 +318,12 @@
         <!-- Team Away -->
         <div class="team-controls right">
             <div class="label">Away</div>
-            <input type="text" placeholder="Team Away" value="Away" id="teamAwayInput" />
+            <div class="input-lock-wrapper">
+                <input type="text" placeholder="Team Away" value="Away" id="teamAwayInput" />
+                <button id="teamAwayLockBtn">
+                    <img id="teamAwayLockIcon" src="assets/unlock.png" alt="Lock Icon" width="24" height="24">
+                </button>
+            </div>
             <div class="label">Score</div>
             <div class="score-buttons">
                 <button id="asp1">+1</button>
