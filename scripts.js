@@ -269,6 +269,16 @@ function adjustPeriod(element, delta){
 if (document.getElementById('team1-score')) {
   loadLocalStorage();
   listenForUpdates();
+  const logo = document.getElementById('logo');
+  logo.addEventListener('click', () => {
+    if (logo.src.includes('logo.png')) {
+        logo.src = 'assets/logo2.png';
+        document.body.classList.add('light-mode');
+    } else {
+        logo.src = 'assets/logo.png';
+        document.body.classList.remove('light-mode');
+    }
+});
 }
 
 // ===============================
@@ -746,6 +756,18 @@ document.addEventListener('DOMContentLoaded', () => {
         shotBtn.click();
       } else if (key === 'p' || key === 'P') {
         bothBtn.click();
+      }
+    });
+
+
+    const toggleLightModeCheckbox = document.getElementById('toggleLightMode');
+
+
+    toggleLightModeCheckbox.addEventListener('change', () => {
+      if (toggleLightModeCheckbox.checked) {
+          document.body.classList.add('light-mode');
+      } else {
+          document.body.classList.remove('light-mode');
       }
     });
   }

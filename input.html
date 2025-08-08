@@ -176,6 +176,7 @@
             display: flex;
             gap: 10px;
             width: 100%;
+            align-items: center;
         }
 
         .button-row .timer-button {
@@ -237,6 +238,137 @@
 
         .reset-button:hover {
             background-color: rgba(255, 255, 255, 0.1);
+        }
+
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        /* Hide default checkbox */
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        /* The slider */
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        /* Circle inside the slider */
+        .slider::before {
+            position: absolute;
+            content: "";
+            height: 26px; width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        /* Checked state */
+        .switch input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        .switch input:checked + .slider::before {
+            transform: translateX(26px);
+        }
+
+        /* === Light Mode === */
+        body.light-mode {
+            background-color: #f9f9f9;
+            color: #222;
+        }
+
+        body.light-mode .team-controls input {
+            background-color: white;
+            color: #222;
+            border: 2px solid #555;
+        }
+
+        body.light-mode .team-controls input:disabled {
+            background-color: #ddd;
+            color: #555;
+        }
+
+        body.light-mode .team-controls .label {
+            color: #222;
+        }
+
+        body.light-mode .score-buttons button,
+        body.light-mode .foul-buttons button,
+        body.light-mode .period-buttons button,
+        body.light-mode .reset-button,
+        body.light-mode button.timer-button {
+            border-color: #444;
+            color: #222;
+            background: none;
+        }
+
+        body.light-mode .score-buttons button:hover,
+        body.light-mode .foul-buttons button:hover,
+        body.light-mode .period-buttons button:hover,
+        body.light-mode .reset-button:hover,
+        body.light-mode button.timer-button:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        body.light-mode .timer-controls {
+            border-color: #444;
+        }
+
+        body.light-mode .timer-controls::before,
+        body.light-mode .timer-controls::after {
+            background-color: #444;
+        }
+
+        body.light-mode .input-lock-wrapper button img {
+            filter: invert(0); /* supaya ikon tetap normal di light mode */
+        }
+
+        /* Toggle switch track and knob */
+        body.light-mode .switch .slider {
+            background-color: #ccc;
+        }
+
+        body.light-mode .switch input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        body.light-mode .switch input:checked + .slider::before {
+            background-color: white;
+        }
+
+        /* Disabled buttons style (if any) */
+        body.light-mode button:disabled {
+            opacity: 0.6;
+        }
+
+        /* Optional scrollbar for light mode if any overflow */
+        body.light-mode ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        body.light-mode ::-webkit-scrollbar-track {
+            background: #eee;
+        }
+
+        body.light-mode ::-webkit-scrollbar-thumb {
+            background: #bbb;
+            border-radius: 4px;
         }
 
 
@@ -307,6 +439,10 @@
     <div class="container">
         <div class="top-right">
             <div class="button-row">
+                <label class="switch">
+                    <input type="checkbox" id="toggleLightMode">
+                    <span class="slider"></span>
+                </label>
                 <button id="resetButton" class="reset-button">Reset</button>
             </div>
         </div>

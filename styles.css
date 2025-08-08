@@ -47,7 +47,6 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    cursor: pointer;
 }
 
 .team-div{
@@ -57,7 +56,7 @@ body {
 .score {
     font-size: clamp(6em, 10vw, 12em);
     margin-bottom: 2vh;
-    border: 0.3vw solid white;
+    border: 0.4vw solid white;
     border-radius: 1.5vw;
     width: 100%;
     aspect-ratio: 1 / 1; 
@@ -79,7 +78,6 @@ body {
 .timer {
     font-size: clamp(5em, 9vw, 10em);
     margin-bottom: 2vh;
-    cursor: pointer;
 }
 
 .timer:active,
@@ -109,7 +107,7 @@ body {
 
 .foul-count {
     font-size: clamp(4em, 7vw, 8em);
-    border: 0.3vw solid white;
+    border: 0.4vw solid white;
     border-radius: 1.5vw;
     width: clamp(100px, 10vw, 200px);
     aspect-ratio: 1 / 1;
@@ -135,6 +133,7 @@ body {
     max-width: 100%;
     height: auto;
     width: clamp(100px, 10vw, 200px);
+    cursor: pointer;
 }
 
 button {
@@ -150,4 +149,46 @@ button {
     white-space: nowrap;
     height: 80px;
     line-height: clamp(60px, 80px, 80px);
+}
+
+
+
+
+/* === Light Mode Styles === */
+body.light-mode {
+    background-color: white;
+    color: black;
+}
+
+body.light-mode .score {
+    border-color: black;
+    color: black;
+}
+
+body.light-mode .foul-count {
+    border-color: black;
+    color: black;
+}
+
+body.light-mode .timer:active,
+body.light-mode .team-name:active {
+    background-color: #ddd;
+}
+
+body.light-mode .shot-clock.red {
+    color: red; /* tetap merah agar peringatan terlihat */
+}
+
+body.light-mode .foul-count.red {
+    color: red; /* tetap merah juga */
+}
+
+body.light-mode button {
+    background-color: #eee;
+    color: black;
+    border: 0.4vw solid #ccc;
+}
+
+body.light-mode button:hover {
+    background-color: #ddd;
 }
