@@ -73,7 +73,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    transform: translateY(-15%);
+    /* transform: translateY(-15%); */
 }
 
 .timer {
@@ -94,6 +94,10 @@ body {
 
 .shot-clock.red {
     color: red;
+}
+
+.period {
+    font-size: clamp(1em, 4vw, 5em);
 }
 
 .fouls {
@@ -147,13 +151,3 @@ button {
     height: 80px;
     line-height: clamp(60px, 80px, 80px);
 }
-
-/* #team1-name, #team2-name {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    height: clamp(40px, 4.68em, 80px);
-} */

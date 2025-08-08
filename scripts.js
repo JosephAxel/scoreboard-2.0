@@ -1,5 +1,6 @@
 const channel = new BroadcastChannel('scoreboard');
 let currentInitialShot = 12;
+let currentPeriod = 1;
 let isGameRunning = false;
 let isShotRunning = false;
 let homeName = 'HOME';
@@ -49,6 +50,13 @@ function listenForUpdates() {
       localStorage.clear();
       location.reload();
     }
+
+    if (data.type === 'adjust-period') {
+      const periodElement = document.getElementById('period');
+      adjustPeriod(periodElement, data.delta);
+      localStorage.setItem('period', periodElement.textContent);
+    }
+
 
     if (data.type === 'adjust-home-score') {
       const homeScoreElement = document.getElementById('team1-score');
@@ -155,6 +163,7 @@ function loadLocalStorage(){
   const awayFoulElement = document.getElementById('team2-foul-count');
   const timerEl = document.getElementById('timer');
   const shotClockEl = document.getElementById('shot-clock');
+  const periodElement = document.getElementById('period');
 
   if (localStorage.getItem('homeName') !== null) {
     homeName = localStorage.getItem('homeName');  
@@ -192,6 +201,10 @@ function loadLocalStorage(){
   }
   if (localStorage.getItem('isShotRunning') !== null) {
     isShotRunning = localStorage.getItem('isShotRunning') === 'true';
+  }
+  if (localStorage.getItem('period') !== null) {
+    currentPeriod = parseInt(localStorage.getItem("period"), 10);
+    adjustFoul(periodElement, currentPeriod);
   }
 
   if (localStorage.getItem('currentGameTime') !== null) {
@@ -239,6 +252,17 @@ function adjustFoul(element, delta){
 
     if (foul < 0) foul = 0;
     criticalFoul(element, foul);
+  }
+}
+
+function adjustPeriod(element, delta){
+  if (element) {
+    let period = parseInt(element.textContent, 10);
+    period += delta;
+
+    if (period < 1) period = 1;
+    if (period > 4) period = 4;
+    element.textContent = period;
   }
 }
 
@@ -315,9 +339,9 @@ function criticalShotClock(element, score) {
   }
 }
 
-function criticalFoul(element, score) {
-  element.textContent = score;
-  if (score >= 5) {
+function criticalFoul(element, foul) {
+  element.textContent = foul;
+  if (foul >= 5) {
     element.classList.add('red');
   } else {
     element.classList.remove('red');
@@ -365,6 +389,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const sub3ScoreAwayBtn = document.getElementById('asm3');
   const add1FoulAwayBtn = document.getElementById('afp1');
   const sub1FoulAwayBtn = document.getElementById('afm1');
+  const add1PeriodBtn = document.getElementById('pp1');
+  const sub1PeriodBtn = document.getElementById('pm1');
 
   const resetButton = document.getElementById('resetButton');
 
@@ -656,6 +682,12 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('awayName', newValue);
       channel.postMessage({ type: 'update-team-name', team: 'away', name: newValue });
     });
+  }
+
+  // === PERIOD BUTTONS ===
+  if (add1PeriodBtn && sub1PeriodBtn) {
+    setupDynamicHoldButton(add1PeriodBtn, 'adjust-period', 1);
+    setupDynamicHoldButton(sub1PeriodBtn, 'adjust-period', -1);
   }
 
   if (resetButton) {
