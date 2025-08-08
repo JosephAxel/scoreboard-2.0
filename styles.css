@@ -144,4 +144,16 @@ button {
     width: 100%;
     overflow: hidden;
     white-space: nowrap;
+    height: 80px;
+    line-height: clamp(60px, 80px, 80px);
 }
+
+/* #team1-name, #team2-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    height: clamp(40px, 4.68em, 80px);
+} */

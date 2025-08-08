@@ -15,32 +15,26 @@ let shotClockInterval = null;
 const shotClockBeep = new Audio('assets/buzzer.mp3');
 
 function adjustFontSize(element) {
-  // Atur ukuran font maksimum sesuai dengan gaya CSS
-  const maxFontSize = 4.68; // Ukuran font maksimal
+  const maxFontSize = 4.68; 
   let fontSize = maxFontSize;
 
   element.style.fontSize = fontSize + "em";
-  let marginBottom = 31.2;
 
   const originalWhiteSpace = element.style.whiteSpace;
   const originalOverflow = element.style.overflow;
 
-  // Paksa teks tetap dalam satu baris dan sembunyikan overflow
   element.style.whiteSpace = 'nowrap';
   element.style.overflow = 'hidden';
 
-  // Kurangi ukuran font sampai teks muat dalam lebar kontainer
   while (element.scrollWidth > element.clientWidth && fontSize > 0) {
     fontSize -= 0.5;
-    marginBottom += 2;
     element.style.fontSize = fontSize + "em";
-    element.style.marginBottom = marginBottom + "px";
   }
 
-  // Kembalikan properti ke semula
   element.style.whiteSpace = originalWhiteSpace;
   element.style.overflow = originalOverflow;
 }
+
 
 
 // ===============================
